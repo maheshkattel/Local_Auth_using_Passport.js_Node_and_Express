@@ -8,6 +8,7 @@ const connectMongoDB = require("./src/connection/connection")
 
 const app = express();
 const PORT = 3000;
+// const memoryStore = new session.MemoryStore();
 
 // MongoDB Connection if needed
 connectMongoDB("mongodb://localhost:27017/mahesh")
@@ -18,15 +19,22 @@ app.use(session({
     secret: "Hello from Mahesh",
     saveUninitialized: false,
     resave: false,
-    cookie: {
-        maxAge: 60000 * 60
-    }
+    // store: memoryStore,
+    // cookie: {
+    //     maxAge: 60000 * 60
+    // }
 }))
 
 app.use(passport.initialize())
 app.use(passport.session())
 
 // Routes
+
+app.use((req, res, next) =>
+{
+    console.log(memoryStore);
+    next();
+})
 app.use("/api/auth", authRoutes)
 
 
