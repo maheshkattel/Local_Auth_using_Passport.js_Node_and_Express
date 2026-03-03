@@ -1,8 +1,36 @@
-const register = (req, res) =>
+const User = require("../schema/user")
+const { hashPassword, comparePassword } = require("../utils/helper")
+const register = async (req, res) =>
 {
-    res.send("Hello World");
+    const { email, password } = req.query;
+    const userDB = await User.findOne({ email })
+    if (userDB) {
+        res.status(400).json({ msg: "User already Exists" })
+    }
+    else {
+        const hashedPassword = hashPassword(password);
+        const newUser = await User.create({ email, password: hashedPassword });
+        res.status(201).json({ msg: "User created successfully" })
+    }
 }
 
+
+const login = async (req, res) =>
+{
+    const { email, password } = req.query;
+    if (!email || !password) return res.status(400).json({ "msg": "please provide valid credentials" })
+
+    const userDB = await User.findOne({ email });
+    if (!userDB) return res.status(401).json({ "msg": "No User found" })
+
+    const isPasswordvalid = comparePassword(password, userDB.password)
+    if (isPasswordvalid) {
+        res.status(200).json({ "msg": "Login Successful" })
+    }
+    else {
+        res.status(400).json({ "msg": "Invalid Credentials Provided" })
+    }
+}
 
 const status = (req, res) =>
 {
@@ -23,4 +51,4 @@ const logout = (req, res) =>
 
 }
 
-module.exports = { register, status, logout }
+module.exports = { register, login, status, logout }
